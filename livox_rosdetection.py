@@ -175,11 +175,13 @@ class Detector(object):
         header.frame_id = 'livox_frame'
         points_list = []
         for point in pcl2.read_points(msg, skip_nans=True, field_names=("x", "y", "z", "intensity")):
-            if point[0] == 0 and point[1] == 0 and point[2] == 0:
+            h = 0 # setting the livox_device's height from ground
+            point_input = (point[0], point[1], point[2] - (1.9 - h), point[3])
+            if point_input[0] == 0 and point_input[1] == 0 and point_input[2] == 0:
                 continue
-            if point[0] < 2.0 and np.abs(point[1]) < 1.5:
+            if point_input[0] < 2.0 and np.abs(point_input[1]) < 1.5:
                 continue
-            points_list.append(point)
+            points_list.append(point_input)
         points_list = np.asarray(points_list)
         pointcloud_msg = pcl2.create_cloud_xyz32(header, points_list[:, 0:3])
         vox = self.data2voxel(points_list)
